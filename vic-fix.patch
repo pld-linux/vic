@@ -1,0 +1,333 @@
+--- vic-2.8/main.cc.orig	1996-07-22 22:12:22.000000000 +0200
++++ vic-2.8/main.cc	2003-04-18 18:37:22.000000000 +0200
+@@ -142,11 +142,7 @@
+ } cmd_usage;
+ 
+ #ifndef SIGARGS
+-#ifdef __SUNPRO_CC
+ #define SIGARGS int arg
+-#else
+-#define SIGARGS ... 
+-#endif
+ #endif
+ 
+ extern void adios();
+@@ -177,7 +173,7 @@
+ 		else {
+ 			Tk_Window tk = t.tkmain();
+ 			Tk_Uid uid = Tk_GetUid((char*)argv[1]);
+-			XFontStruct* p = Tk_GetFontStruct(t.interp(), tk, uid);
++			Tk_Font p = Tk_GetFont(t.interp(), tk, uid);
+ 			t.result(p != 0 ? "1" : "0");
+ 		}
+ 		return (TCL_OK);
+@@ -437,6 +437,7 @@
+ 	if (display == NULL)
+ 		display = "localhost:0";
+ #endif
++	Tcl_Init(tcl.interp());
+ 	tcl.evalf(display?
+ 		    "set argv \"-name vic -display %s\"" :
+ 		    "set argv \"-name vic\"",
+--- vic-2.8/net.cc.orig	1996-06-07 22:37:16.000000000 +0200
++++ vic-2.8/net.cc	2003-04-18 18:39:03.000000000 +0200
+@@ -297,7 +297,7 @@
+ int Network::dorecv(u_char* buf, int len, u_int32_t& from, int fd)
+ {
+ 	sockaddr_in sfrom;
+-	int fromlen = sizeof(sfrom);
++	socklen_t fromlen = sizeof(sfrom);
+ 	int cc = ::recvfrom(fd, (char*)buf, len, 0,
+ 			    (sockaddr*)&sfrom, &fromlen);
+ 	if (cc < 0) {
+--- vic-2.8/net-ip.cc.orig	1996-06-27 02:56:39.000000000 +0200
++++ vic-2.8/net-ip.cc	2003-04-18 18:39:23.000000000 +0200
+@@ -203,7 +203,7 @@
+ {
+ 	memset((char *)p, 0, sizeof(*p));
+ 	p->sin_family = AF_INET;
+-	int len = sizeof(*p);
++	socklen_t len = sizeof(*p);
+ 	if (getsockname(ssock_, (struct sockaddr *)p, &len) < 0) {
+ 		perror("getsockname");
+ 		p->sin_addr.s_addr = 0;
+--- vic-2.8/iohandler.cc.orig	1996-05-18 20:27:23.000000000 +0200
++++ vic-2.8/iohandler.cc	2003-04-18 18:42:17.000000000 +0200
+@@ -132,7 +132,7 @@
+ 	    
+         }
+ #else
+-	Tk_CreateFileHandler((ClientData)fd, mask, callback, (ClientData)this);
++	Tk_CreateFileHandler(fd, mask, callback, (ClientData)this);
+ #endif
+ }
+ 
+@@ -151,7 +151,7 @@
+ 	}
+ #else
+ 	if (fd_ >= 0) {
+-		Tk_DeleteFileHandler((ClientData)fd_);
++		Tk_DeleteFileHandler(fd_);
+ 		fd_ = -1;
+ 	}
+ #endif
+--- vic-2.8/encoder-h261.cc.orig	1996-07-22 22:12:53.000000000 +0200
++++ vic-2.8/encoder-h261.cc	2003-04-18 18:45:41.000000000 +0200
+@@ -631,7 +631,7 @@
+ 	if (q < 8) {
+ 		register int cmin = 0, cmax = 0;
+ 		register short* bp = lblk;
+-		register i, j;
++		register int i, j;
+ 
+ 		// Y U and V blocks
+ 		for (i = 6; --i >= 0; ) {
+--- vic-2.8/transcoder-jpeg.cc.orig	1995-11-14 06:46:58.000000000 +0100
++++ vic-2.8/transcoder-jpeg.cc	2003-04-18 18:46:22.000000000 +0200
+@@ -138,7 +138,7 @@
+ 	rval = target_->consume(df);
+ 
+ 	// update CR vec
+-	register blkno;
++	register int blkno;
+ 	int s;
+ 	for (blkno = 0; blkno < crvlen_; blkno++) {
+ 		s = CR_STATE(crvec_[blkno]);
+--- vic-2.8/color-dither.cc.orig	1995-11-14 06:46:09.000000000 +0100
++++ vic-2.8/color-dither.cc	2003-04-18 18:49:11.000000000 +0200
+@@ -177,7 +177,7 @@
+ protected:
+ 	DitherColorModel& cm_;
+ 	virtual void update();
+-	virtual void disable() { method_ = PseudoWindowRenderer::dither_null; }
++	virtual void disable() { method_ = &PseudoWindowRenderer::dither_null; }
+ 	DitherMethod method_;
+ 	void dither_422(const u_char* frm, u_int off, u_int x,
+ 			u_int width, u_int height) const;
+--- vic-2.8/color-ed.cc.orig	1995-11-14 06:46:10.000000000 +0100
++++ vic-2.8/color-ed.cc	2003-04-18 18:49:28.000000000 +0200
+@@ -180,7 +180,7 @@
+ protected:
+ 	EDColorModel& cm_;
+ 	virtual void update();
+-	virtual void disable() { method_ = PseudoWindowRenderer::dither_null; }
++	virtual void disable() { method_ = &PseudoWindowRenderer::dither_null; }
+ 	EDMethod method_;
+ 	void dither_422(const u_char* frm, u_int off, u_int x,
+ 			u_int width, u_int height) const;
+--- vic-2.8/color-gray.cc.orig	1995-11-14 06:46:10.000000000 +0100
++++ vic-2.8/color-gray.cc	2003-04-18 18:50:24.000000000 +0200
+@@ -82,7 +82,7 @@
+ 	}
+ protected:
+ 	virtual void update();
+-	virtual void disable() { method_ = PseudoWindowRenderer::dither_null; }
++	virtual void disable() { method_ = &PseudoWindowRenderer::dither_null; }
+ 	GrayMethod method_;
+ };
+ 
+--- vic-2.8/color-hi.cc.orig	1996-05-16 14:42:44.000000000 +0200
++++ vic-2.8/color-hi.cc	2003-04-18 18:50:10.000000000 +0200
+@@ -164,7 +164,7 @@
+     protected:
+ 	HiColorModel& cm_;
+ 	virtual void update();
+-	virtual void disable() { method_ = HiMethod(WindowRenderer::dither_null); }
++	virtual void disable() { method_ = HiMethod(&WindowRenderer::dither_null); }
+ 	HiMethod method_;
+ 	void map_422(const u_char* frm, u_int off, u_int x,
+ 		     u_int width, u_int height) const;
+--- vic-2.8/color-mono.cc.orig	1995-11-14 03:14:31.000000000 +0100
++++ vic-2.8/color-mono.cc	2003-04-18 18:50:57.000000000 +0200
+@@ -200,7 +200,7 @@
+ 	~MonoColorModel();
+ 	virtual int alloc_grays();
+ 	virtual int command(int argc, const char*const* argv);
+-	inline white(void) { return (white_); }
++	inline int white(void) { return (white_); }
+ private:
+ 	int white_;
+ };
+@@ -250,7 +250,7 @@
+ protected:
+ 	MonoColorModel& cm_;
+ 	virtual void update();
+-	virtual void disable() { method_ = WindowDitherer::dither_null; }
++	virtual void disable() { method_ = &WindowDitherer::dither_null; }
+ 	MonoMethod method_;
+ 	void dither(const u_char* frm, u_int off, u_int x,
+ 		    u_int width, u_int height) const;
+--- vic-2.8/color-quant.cc.orig	1996-02-16 04:21:16.000000000 +0100
++++ vic-2.8/color-quant.cc	2003-04-18 18:49:53.000000000 +0200
+@@ -92,7 +92,7 @@
+ protected:
+ 	QuantColorModel& cm_;
+ 	virtual void update();
+-	virtual void disable() { method_ = PseudoWindowRenderer::dither_null; }
++	virtual void disable() { method_ = &PseudoWindowRenderer::dither_null; }
+ 	QuantMethod method_;
+ 	void map_422(const u_char* frm, u_int off, u_int x,
+ 		     u_int width, u_int height) const;
+--- vic-2.8/color-true.cc.orig	1996-03-04 12:32:13.000000000 +0100
++++ vic-2.8/color-true.cc	2003-04-18 18:48:51.000000000 +0200
+@@ -180,7 +180,7 @@
+ protected:
+ 	TrueColorModel& cm_;
+ 	virtual void update();
+-	virtual void disable() { method_ = TrueMethod(WindowRenderer::dither_null); }
++	virtual void disable() { method_ = TrueMethod(&WindowRenderer::dither_null); }
+ 	TrueMethod method_;
+ 	void map_422(const u_char* frm, u_int off, u_int x,
+ 		     u_int width, u_int height) const;
+--- vic-2.8/jpeg/jpeg.cc.orig	1996-03-01 08:03:20.000000000 +0100
++++ vic-2.8/jpeg/jpeg.cc	2003-04-18 18:52:15.000000000 +0200
+@@ -139,7 +139,7 @@
+ 	dct_unbias_ = 1;
+ 
+ 	short *sp = (short *)frm_;
+-	for (register i = 0; i < n / (BMB * 64) ; i++) {
++	for (register int i = 0; i < n / (BMB * 64) ; i++) {
+ 		*sp = DCT_GRAY;
+ 		sp += 64;
+ 		*sp = DCT_GRAY;
+@@ -173,7 +173,7 @@
+ 	dct_unbias_ = 1;
+ 
+ 	short *sp = (short*)frm_;
+-	for (register i = 0; i < n / (BMB * 64) ; i++) {
++	for (register int i = 0; i < n / (BMB * 64) ; i++) {
+ 		*sp = DCT_GRAY;
+ 		sp += 64;
+ 		*sp = DCT_GRAY;
+--- vic-2.8/p64/mkhuff.cc.orig	1996-02-06 06:05:57.000000000 +0100
++++ vic-2.8/p64/mkhuff.cc	2003-04-18 18:56:21.000000000 +0200
+@@ -45,6 +45,8 @@
+ extern "C" {
+ int getopt(int, char * const *, const char *);
+ }
++#else
++#include <unistd.h>
+ #endif
+ #define HUFFSTRINGS
+ #include "p64-huff.h"
+--- vic-2.8/tkStripchart.c.orig	1996-03-16 22:14:00.000000000 +0100
++++ vic-2.8/tkStripchart.c	2003-04-18 19:21:50.000000000 +0200
+@@ -148,7 +148,7 @@
+ 	int scrollrequired;
+ 	int guarantee_draw;
+ 	int grow_up;
+-	XFontStruct *fontPtr;	/* Information about text font, or NULL. */
++	Tk_Font fontPtr;	/* Information about text font, or NULL. */
+ 	XColor *textColorPtr;	/* Color for drawing text. */
+ 	GC textGC;		/* GC for drawing text. */
+ 	XColor *tickColorPtr;	/* Color for drawing ticks. */
+@@ -571,7 +571,7 @@
+ 		free(StripchartPtr->value);
+ 
+ 	if (StripchartPtr->fontPtr != NULL)
+-		Tk_FreeFontStruct(StripchartPtr->fontPtr);
++		Tk_FreeFont(StripchartPtr->fontPtr);
+ 
+ 	if (StripchartPtr->textColorPtr != NULL)
+ 		Tk_FreeColor(StripchartPtr->textColorPtr);
+@@ -631,7 +631,7 @@
+ 
+ 	Tk_SetBackgroundFromBorder(StripchartPtr->tkwin, StripchartPtr->border);
+ 
+-	gcValues.font = StripchartPtr->fontPtr->fid;
++	gcValues.font = Tk_FontId(StripchartPtr->fontPtr);
+ 	gcValues.foreground = StripchartPtr->textColorPtr->pixel;
+ 	newGC = Tk_GetGC(StripchartPtr->tkwin, GCForeground|GCFont, &gcValues);
+ 	if (StripchartPtr->textGC != None && StripchartPtr->tkwin) {
+@@ -692,8 +692,10 @@
+  {
+ 	int tt = hasatitle(StripchartPtr);
+ 	int bd = StripchartPtr->borderWidth;
+-	int lineHeight = StripchartPtr->fontPtr->ascent +
+-	StripchartPtr->fontPtr->descent;
++	Tk_FontMetrics fm;
++	int lineHeight;
++	Tk_GetFontMetrics(StripchartPtr->fontPtr, &fm);
++	lineHeight = fm.ascent + fm.descent;
+ 
+ 	Tk_GeometryRequest(StripchartPtr->tkwin,
+ 			   2 * (bd + PADDING) + StripchartPtr->num_strips *
+@@ -729,8 +731,10 @@
+ 	XFontStruct *fp = StripchartPtr->fontPtr;
+ 	XCharStruct bbox;
+ 	int x, dummy;
+-	int lineHeight = StripchartPtr->fontPtr->ascent +
+-	StripchartPtr->fontPtr->descent;
++	int lineHeight;
++	Tk_FontMetrics fm;
++	Tk_GetFontMetrics(StripchartPtr->fontPtr, &fm);
++	lineHeight = fm.ascent + fm.descent;
+ 
+ 	StripchartPtr->displaybits &= ~REDRAW_PENDING;
+ 	if ((StripchartPtr->tkwin == NULL) || !Tk_IsMapped(tkwin))
+@@ -1057,15 +1061,19 @@
+ DrawStripi(Stripchart* SPtr, int i)
+ {
+ 	Tk_Window tkwin = SPtr->tkwin;
+-	int lineHeight = SPtr->fontPtr->ascent + SPtr->fontPtr->descent;
++	int lineHeight;
+ 	int x = SPtr->borderWidth + PADDING + (i - 1) * SPtr->strip_width;
+-	int y = SPtr->borderWidth + PADDING +
+-		hasatitle(SPtr) * (lineHeight + PADDING);
++	int y = SPtr->borderWidth + PADDING;
+ 	int w = SPtr->strip_width;
+ 	int h;
+ 	double maxv = SPtr->max_value;
+ 	double minv = SPtr->min_value;
++	Tk_FontMetrics fm;
+ 
++	Tk_GetFontMetrics(SPtr->fontPtr, &fm);
++	lineHeight = fm.ascent + fm.descent;
++	y += hasatitle(SPtr) + (lineHeight + PADDING);
++	
+ 	if (i < 1 || i > SPtr->num_strips)
+ 		return;
+ 
+@@ -1136,14 +1144,19 @@
+ ScrollStrips(Stripchart* SPtr)
+ {
+ 	Tk_Window tkwin = SPtr->tkwin;
+-	int lineHeight = SPtr->fontPtr->ascent + SPtr->fontPtr->descent;
++	int lineHeight;
+ 	int src_x = SPtr->borderWidth + PADDING + SPtr->strip_width;
+-	int src_y = SPtr->borderWidth + PADDING +
+-		    hasatitle(SPtr) * (lineHeight + PADDING);
++	int src_y = SPtr->borderWidth + PADDING;
+ 	int dest_x = src_x - SPtr->strip_width;
+-	int dest_y = src_y;
++	int dest_y;
+ 	int w = (SPtr->num_strips - 1) * SPtr->strip_width;
+ 	int h = SPtr->max_height;
++	Tk_FontMetrics fm;
++
++	Tk_GetFontMetrics(SPtr->fontPtr, &fm);
++	lineHeight = fm.ascent + fm.descent;
++	src_y += hasatitle(SPtr) * (lineHeight + PADDING);
++	dest_y = src_y;
+ 
+ 	XCopyArea(Tk_Display(tkwin), Tk_WindowId(tkwin), Tk_WindowId(tkwin),
+ 	          Tk_GetGC(tkwin, 0, NULL), src_x, src_y, w, h, dest_x, dest_y);
+--- vic-2.8/h261_play.cc.orig	1996-04-06 11:49:43.000000000 +0200
++++ vic-2.8/h261_play.cc	2003-04-18 21:02:28.000000000 +0200
+@@ -56,7 +56,7 @@
+ }
+ #endif
+ 
+-#ifdef WIN32
++#if defined(WIN32) || defined(linux)
+ #include <stdlib.h>
+ #else
+ #include <osfcn.h>
+@@ -380,6 +380,7 @@
+ 	if (display == NULL)
+ 		display = "localhost:0";
+ #endif
++	Tcl_Init(tcl.interp());
+ 	tcl.evalf(display?
+ 		    "set argv \"-name h261_play -display %s\"" :
+ 		    "set argv \"-name h261_play\"",

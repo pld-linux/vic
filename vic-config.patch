@@ -1,0 +1,267 @@
+--- vic-2.8/configure.in.head.orig	1996-04-03 06:52:16.000000000 +0200
++++ vic-2.8/configure.in.head	2003-04-18 18:07:42.000000000 +0200
+@@ -19,9 +19,9 @@
+ V_SIGRET="void"
+ 
+ AC_CHECK_LIB(Xbsd, main, [V_LIB="$V_LIB -lXbsd"])
+-AC_CHECK_LIB(socket, poll, [V_LIB="$V_LIB -lsocket"])
+-AC_CHECK_LIB(nsl, gethostbyname, [V_LIB="$V_LIB -lnsl"])
+-AC_CHECK_LIB(dnet_stub, getnodebyname, [V_LIB="$V_LIB -ldnet_stub"])
++AC_CHECK_FUNC(poll,,[AC_CHECK_LIB(socket, poll, [V_LIB="$V_LIB -lsocket"])])
++AC_CHECK_FUNC(gethostbyname,,[AC_CHECK_LIB(nsl, gethostbyname, [V_LIB="$V_LIB -lnsl"])])
++AC_CHECK_FUNC(getnodebyname,,[AC_CHECK_LIB(dnet_stub, getnodebyname, [V_LIB="$V_LIB -ldnet_stub"])])
+ 
+ V_TAR_EXTRA=""
+ V_DEFINE=""
+--- vic-2.8/configure.in.tk.orig	1996-05-16 10:06:05.000000000 +0200
++++ vic-2.8/configure.in.tk	2003-04-18 18:15:33.000000000 +0200
+@@ -12,10 +12,8 @@
+ 		echo "can't find tcl.h in $d/include"
+ 		exit 1
+ 	fi
+-	places="$d/lib/libtcl7.5.so \
+-		$d/lib/libtcl7.5.a \
+-		$d/lib/libtcl.so \
+-		$d/lib/libtcl.a"
++	places="$d/lib/libtcl.so \
++		$d/lib/libtcla"
+ 	V_LIB_TCL=FAIL
+ 	for dir in $places; do
+ 		if test -r $dir ; then
+@@ -27,8 +25,7 @@
+ 		echo "can't find libtcl.a in $d/lib"
+ 		exit 1
+ 	fi
+-	places="$d/lib/tcl7.5 \
+-		$d/lib/tcl"
++	places="`echo $d/lib/tcl*`"
+ 	V_LIBRARY_TCL=FAIL
+ 	for dir in $places; do
+ 		if test -r $dir/init.tcl ; then
+@@ -44,14 +41,9 @@
+ 	AC_TEST_CPP([#include <tcl.h>], V_INCLUDE_TCL="", V_INCLUDE_TCL=FAIL)
+ 	if test "$V_INCLUDE_TCL" = FAIL; then
+ 		echo "checking for tcl.h"
+-		places="$PWD/../tcl7.5 \
+-			/usr/src/local/tcl7.5 \
+-			/import/tcl/include/tcl7.5 \
+-			$prefix/include \
++		places="$prefix/include \
+ 			$x_includes/tk \
+ 			$x_includes \
+-			/usr/local/include \
+-			/usr/contrib/include \
+ 			/usr/include"
+ 		for dir in $places; do
+ 			if test -r $dir/tcl.h ; then
+@@ -64,24 +56,15 @@
+ 			exit 1
+ 		fi
+ 	fi
+-	AC_CHECK_LIB(tcl7.5, main, V_LIB_TCL="-ltcl7.5", V_LIB_TCL="FAIL")
++	AC_CHECK_LIB(tcl, main, V_LIB_TCL="-ltcl", V_LIB_TCL="FAIL")
+ 	if test "$V_LIB_TCL" = FAIL; then
+ 		echo "checking for libtcl.a"
+ 		places="\
+ 			$prefix/lib \
+ 			$x_libraries \
+-			/usr/contrib/lib \
+-			/usr/local/lib \
+ 			/usr/lib \
+-			$PWD/../tcl7.5 \
+-			/usr/src/local/tcl7.5 \
+-			/import/tcl/lib/tcl7.5 \
+ 			"
+ 		for dir in $places; do
+-			if test -r $dir/libtcl7.5.so -o -r $dir/libtcl7.5.a; then
+-				V_LIB_TCL="-L$dir -ltcl7.5"
+-				break
+-			fi
+ 			if test -r $dir/libtcl.so -o -r $dir/libtcl.a; then
+ 				V_LIB_TCL="-L$dir -ltcl"
+ 				break
+@@ -98,20 +81,10 @@
+ 	fi
+ 	echo "checking for tcl/init.tcl"
+ 	V_LIBRARY_TCL=FAIL
+-	places="/usr/local/lib/tcl7.5 \
+-		/usr/contrib/lib/tcl7.5 \
+-		/usr/lib/tcl7.5 \
+-		/usr/lib/tk/tcl7.5 \
+-		/import/tcl/lib/tcl7.5 \
+-		$prefix/lib/tcl7.5 \
+-		$x_libraries/tcl7.5 \
+-		/usr/local/lib/tcl \
+-		/usr/lib/tcl \
+-		/usr/lib/tk/tcl \
+-		/import/tcl/lib/tcl \
+-		$prefix/lib/tcl \
+-		$x_libraries/tcl \
+-		$x_libraries/tcl"
++	places="`echo /usr/lib/tcl* \
++		/usr/lib/tk/tcl* \
++		$prefix/lib/tcl* \
++		$x_libraries/tcl*`"
+ 	for dir in $places; do
+ 		if test -r $dir/init.tcl; then
+ 			V_LIBRARY_TCL=$dir
+@@ -138,9 +111,7 @@
+ 		echo "can't find tk.h in $d/include"
+ 		exit 1
+ 	fi
+-	places="$d/lib/libtk4.1.so \
+-		$d/lib/libtk4.1.a \
+-		$d/lib/libtk.so \
++	places="$d/lib/libtk.so \
+ 		$d/lib/libtk.a"
+ 	V_LIB_TK=FAIL
+ 	for dir in $places; do
+@@ -153,8 +124,7 @@
+ 		echo "can't find libtk.a in $d/lib"
+ 		exit 1
+ 	fi
+-	places="$d/lib/tk4.1 \
+-		$d/lib/tk"
++	places="`echo $d/lib/tk*`"
+ 	V_LIBRARY_TK=FAIL
+ 	for dir in $places; do
+ 		if test -r $dir/tk.tcl ; then
+@@ -173,15 +143,10 @@
+ 		V_INCLUDE_TK=""
+ 		places="\
+ 			$prefix/include \
+-			/usr/local/include \
+-			/usr/contrib/include \
+ 			/usr/include/tcl \
+ 			/usr/include\
+ 			$x_includes/tk \
+ 			$x_includes \
+-			$PWD/../tk4.1 \
+-			/usr/src/local/tk4.1 \
+-			/import/tcl/include/tk4.1 \
+ 			"
+ 		for dir in $places; do
+ 			if test -r $dir/tk.h ; then
+@@ -194,23 +159,14 @@
+ 			exit 1
+ 		fi
+ 	fi
+-	AC_CHECK_LIB(tk4.1, main, V_LIB_TK="-ltk4.1", V_LIB_TK="FAIL")
++	AC_CHECK_LIB(tk, main, V_LIB_TK="-ltk", V_LIB_TK="FAIL")
+ 	if test "$V_LIB_TK" = FAIL; then
+ 		echo "checking for libtk.a"
+-		places="/usr/local/lib \
+-			/usr/contrib/lib \
+-			/usr/lib \
++		places="/usr/lib \
+ 			/usr/lib/tk \
+-			/import/tcl/lib \
+-			$PWD/../tk4.1 \
+-			/usr/src/local/tk4.1 \
+ 			$prefix/lib \
+ 			$x_libraries"
+ 		for dir in $places; do
+-			if test -r $dir/libtk4.1.so -o -r $dir/libtk4.1.a; then
+-				V_LIB_TK="-L$dir -ltk4.1"
+-				break
+-			fi
+ 			if test -r $dir/libtk.so -o -r $dir/libtk.a; then
+ 				V_LIB_TK="-L$dir -ltk"
+ 				break
+@@ -227,22 +183,10 @@
+ 	fi
+ 	echo "checking for tk/tk.tcl"
+ 	V_LIBRARY_TK=FAIL
+-	places="/usr/local/lib/tk4.1 \
+-		/usr/contrib/lib/tk4.1 \
+-		/usr/lib/tk4.1 \
+-		/usr/lib/tk/tk4.1 \
+-		/import/tcl/lib/tk4.1 \
+-		$prefix/lib/tk4.1 \
+-		$x_libraries/tk4.1 \
+-		$PWD/../tk4.1/library \
+-		/usr/src/local/tk4.1/library \
+-		/usr/local/lib/tk \
+-		/usr/lib/tk \
+-		/usr/lib/tk/tk \
+-		/import/tcl/lib/tk \
+-		$prefix/lib/tk \
+-		$x_libraries/tk \
+-		$x_libraries/tk"
++	places="`echo /usr/lib/tk* \
++		/usr/lib/tk/tk* \
++		$prefix/lib/tk* \
++		$x_libraries/tk*`"
+ 	for dir in $places; do
+ 		if test -r $dir/tk.tcl; then
+ 			V_LIBRARY_TK=$dir
+--- vic-2.8/configure.in.x11.orig	1996-04-03 06:52:52.000000000 +0200
++++ vic-2.8/configure.in.x11	2003-04-18 18:18:16.000000000 +0200
+@@ -57,7 +57,7 @@
+ 	AC_CHECK_LIB(X11, XOpenDisplay, x_libraries="", x_libraries=NONE)
+ 	if test "$x_libraries" = NONE ; then
+ 		for i in $xlibdirs ; do
+-			if test -r $i/libX11.a; then
++			if test -r $i/libX11.so -o -r $i/libX11.a; then
+ 				x_libraries=$i
+ 				break
+ 			fi
+@@ -76,7 +76,7 @@
+ 		AC_CHECK_LIB(Xext, XShmAttach, V_Xext="-lXext", V_Xext=NONE, -lX11)
+ 	else
+ 		echo "checking for libXext.a"
+-		if test -f $x_libraries/libXext.a ; then
++		if test -f $x_libraries/libXext.so -o -f $x_libraries/libXext.a ; then
+ 			V_Xext="-lXext"
+ 		else
+ 			echo "warning: compiling without -lXext"
+--- vic-2.8/inet.h.orig	1996-02-06 01:02:04.000000000 +0100
++++ vic-2.8/inet.h	2003-04-18 18:29:00.000000000 +0200
+@@ -94,7 +94,7 @@
+ #define INADDR_LOOPBACK (u_int32_t)0x7F000001
+ #endif
+ 
+-#if defined(__linux__) || defined(WIN32)
++#if defined(WIN32)
+ struct msghdr {
+ 	caddr_t	msg_name;		/* optional address */
+ 	u_int	msg_namelen;		/* size of address */
+--- vic-2.8/config.h.orig	2003-04-18 18:27:06.000000000 +0200
++++ vic-2.8/config.h	2003-04-18 18:43:56.000000000 +0200
+@@ -81,13 +81,9 @@
+ #endif
+ #include <netinet/in.h>
+ #include <arpa/inet.h>
+-int strcasecmp(const char *, const char *);
+-clock_t clock(void);
+-#if !defined(sco) && !defined(sgi) && !defined(__bsdi__) && !defined(__FreeBSD__)
++#if !defined(sco) && !defined(sgi) && !defined(__bsdi__) && !defined(__FreeBSD__) && !defined(linux)
+ int gethostid(void);
+ #endif
+-time_t time(time_t *);
+-char *ctime(const time_t *);
+ #if defined(__cplusplus)
+ }
+ #endif
+--- vic-2.8/configure.in.orig	1996-06-21 08:36:47.000000000 +0200
++++ vic-2.8/configure.in	2003-04-18 19:00:55.000000000 +0200
+@@ -50,7 +50,7 @@
+ 	V_LIB_GRABBER="$V_LIB_GRABBER -lsvideo"
+ 	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-svideo.o"
+ fi
+-if test -r /usr/lib/libXv.a ; then
+-	V_LIB_GRABBER="$V_LIB_GRABBER -lXv"
++if test -r /usr/X11R6/lib/libXv.so -o -r /usr/X11R6/lib/libXv.a -o -r /usr/lib/libXv.a ; then
++	V_LIB_GRABBER="$V_LIB_GRABBER -L/usr/X11R6/lib -lXv"
+ 	V_DEFINE="$V_DEFINE -DXV_PSEUDO8"
+ 	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-xv.o"
+@@ -87,9 +87,6 @@
+ 	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-qcam.o"
+ 	V_DEFINE="$V_DEFINE -DQCAMDEV"
+ fi
+-if test -r /usr/include/linux/scc.h -o -r /usr/include/machine/scc.h ; then
+-	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-scc.o"
+-fi
+ vpix_dir=/usr/src/local/vfc-1.0
+ vpix_lib=$vpix_dir/vfc_lib
+ if test -d /import/VideoPix ; then
