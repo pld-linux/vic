@@ -6,6 +6,7 @@ Release:	0.1
 License:	BSD
 Group:		Applications/Multimedia
 Source0:	ftp://ftp.ee.lbl.gov/conferencing/vic/%{name}src-%{version}.tar.gz
+# Source0-md5:	1f9ae3fbf8e9e47e6539c0621964542d
 Patch0:		%{name}-config.patch
 Patch1:		%{name}-fix.patch
 URL:		http://www-nrg.ee.lbl.gov/vic/
