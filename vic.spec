@@ -1,5 +1,5 @@
 Summary:	VIC - the UCB/LBNL video conferencing tool
-Summary(pl):	VIC - narzêdzie do konferencji wideo z UCB/LBNL
+Summary(pl.UTF-8):   VIC - narzÄ™dzie do konferencji wideo z UCB/LBNL
 Name:		vic
 Version:	2.8
 Release:	0.1
@@ -20,8 +20,8 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %description
 VIC - the UCB/LBNL video conferencing tool.
 
-%description -l pl
-VIC - narzêdzie do konferencji wideo z UCB/LBNL.
+%description -l pl.UTF-8
+VIC - narzÄ™dzie do konferencji wideo z UCB/LBNL.
 
 %prep
 %setup -q
