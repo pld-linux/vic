@@ -1,5 +1,5 @@
 Summary:	VIC - the UCB/LBNL video conferencing tool
-Summary(pl.UTF-8):   VIC - narzędzie do konferencji wideo z UCB/LBNL
+Summary(pl.UTF-8):	VIC - narzędzie do konferencji wideo z UCB/LBNL
 Name:		vic
 Version:	2.8
 Release:	0.1
